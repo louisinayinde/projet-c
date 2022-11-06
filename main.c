@@ -2,12 +2,23 @@
 #include <stdlib.h>
 #include <ctype.h>
 
-float * CALCFREQ(float alpha[26], char * nom_fic)
+int it = 0;
+int tabLettre [256];
+float tabFreq[27] = {0}; // alpha = 27 : 26 lettre + espace
+
+struct Noeud {
+    int freq;
+    char caractere;
+    struct Noeud *left, *right;
+};
+
+void * CALCFREQ()
 {
     FILE *fic=fopen("Compression.TXT","r");
+    float alpha[27] = {0};
     char lettre;
-    int total=0;
-    int i=0;
+    int total=0, j=0;
+
 
     while((lettre=fgetc(fic))!=EOF)
     {
@@ -28,63 +39,148 @@ float * CALCFREQ(float alpha[26], char * nom_fic)
     for(int i=0;i<27;i++)
     {
         alpha[i]=(alpha[i]/total)*100;
-        if(alpha[i]!=0 && i<26) printf("%c => %lf %%\n",i+97,alpha[i]);
-        if(i==26) printf("%c => %lf %%\n",32, alpha[26]);
-
+        if(alpha[i]!=0 && i<26) {
+            tabLettre[j] = i+97; //stock le caractere(en int) dans tableau globale de lettre
+            tabFreq[j] = (int)alpha[i]; // stock la frequence dans tableau globale de frequence
+            j++;
+        }
+        if(i==26) {
+            tabLettre[j] = 32;
+            tabFreq[j] = (int)alpha[i];
+            j++;
+        }
+        it=j; // iterator de tabLettre recupere la valeur de j
     }
     fclose(fic);
-    return alpha;
 }
 
-void convertToBinary() {
-    char test = 'a';
-    int num = 'a';
-    int it = 0;
-    int binary[32];
-    printf("%d\n", num);
-
-    while (num > 0) {
-        binary[it] = num% 2;
-        printf("%d\n", binary[it]);
-        num/2;
-        it++;
+struct Noeud createHeap (int freq, char caractere){
+    struct Noeud temp;
+    if(freq!=0 && caractere!=NULL){
+        temp.caractere = caractere;
+        temp.freq = freq;
+        temp.left = temp.right =NULL;
     }
-    /*for (int j = it-1; j >= 0; j--){
-      printf("%d", binary[j]);
-    }*/
+    return temp;
+}
+
+struct Noeud createNode (int freq, char caractere, struct Noeud node1, struct Noeud node2){
+    struct Noeud temp;
+    struct Noeud *tempNode1 = &node1;
+    struct Noeud *tempNode2 = &node2;
+    if(freq!=0 && caractere!=NULL){
+        temp.caractere = caractere;
+        temp.freq = freq;
+        temp.left =tempNode1;
+        temp.right =tempNode2;
+    }
+    return temp;
+}
+
+void display2DNodeUtil (struct Noeud *racine, int espace){
+
+    espace += 5;
+
+    // branche "right" de l'arbre
+    display2DNodeUtil(racine->right, espace);
+
+
+    printf("\n");
+    for (int i = it; i < espace; i++) printf(" ");
+    printf("%d\n", racine->freq);
+
+    // branche "left" de l'arbre
+    display2DNodeUtil(racine->left, espace);
+}
+
+void display2DNode (struct Noeud *racine) {
+    display2DNodeUtil(racine, 0);
+}
+
+void displayNode (struct Noeud temp) {
+    printf("%c => %d\n", temp.caractere, temp.freq);
+}
+
+
+void createTree(){
+    int sommeFrequence = 0, iterator = it, k=0;
+    char temp;
+    struct Noeud tabNoeud [it];
+    struct Noeud tempNode;
+    struct Noeud arbre;
+
+    //creation des feuilles de l'arbre a partir des tableau de frequence et caractere
+    for(int i=0;i<it;i++)
+    {
+        temp = tabLettre[i];
+        tabNoeud[i] = createHeap(tabFreq[i], temp);
+    }
+
+    for(int i=0;i<it;i++) displayNode(tabNoeud[i]);
+    printf("\n\n");
+
+
+
+    for(int l=0;l<iterator;l++){
+
+        //tri du tableau de noeud
+        for (int i=0;i<it-1;i++)
+        {
+            for (int j=0;j<it-i-1;j++)
+            {
+              if (tabNoeud[j].freq > tabNoeud[j+1].freq)
+              {
+                tempNode = tabNoeud[j];
+                tabNoeud[j] = tabNoeud[j+1];
+                tabNoeud[j+1] = tempNode;
+              }
+            }
+        }
+
+        sommeFrequence = tabNoeud[0].freq + tabNoeud[1].freq;
+        tabNoeud[0] = createNode(sommeFrequence, '.', tabNoeud[0], tabNoeud[0+1]);
+        for(int i=1; i<it-1; i++)
+        {
+            tabNoeud[i] = tabNoeud[i + 1];
+        }
+
+        /* decrementation de it(taille tableau de frequence, caractere et noeud */
+        it--;
+
+        for(int i=0;i<it;i++) displayNode(tabNoeud[i]);
+        printf("\n\n");
+
+    }
+
+    it=iterator;
+    display2DNode(&tabNoeud[0]);
+
 }
 
 void display() {
 
     int choix;
-    float alpha[27] = {0}; // alpha = 27 : 26 lettre + espace
-    float * tab_alpha;
 
-    printf("Veuillez choisir : \n  1 - Compression\n  2 - Decompression\n  3 - Quitter\n");
+    printf("Veuillez choisir : \n  1 - Compression\n  2 - Quitter\n");
     scanf("%d",&choix);
     switch(choix){
         case 1 :
             printf("Vous avez choisi la compression\n\n");
-            tab_alpha = CALCFREQ(alpha,"Compression.txt");
-            convertToBinary();
+            CALCFREQ();
+            createTree();
             display();
         case 2 :
-            printf("Vous avez choisi la decompression\n");
-            display();
-        case 3 :
-            printf("Vous avez choisi qe quitter\n");
+            printf("Vous avez choisie de quitter\n");
             break;
         default :
             printf("Erreur entree, au revoir\n");
             break;
     }
-    free(tab_alpha);
 }
+
 
 int main()
 {
-    //display();
-    convertToBinary();
+    display();
     return 0;
-
 }
