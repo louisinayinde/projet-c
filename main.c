@@ -1,18 +1,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdbool.h>
 #include <ctype.h>
 
 
 int it = 0;
 int tabLettre [256];
 float tabFreq[27] = {0}; // alpha = 27 : 26 lettre + espace
-
-struct Huffman{
-int tabLettre [256];
-float tabFreq[27];
-struct Huffman *suivant;
-};
 
 struct Noeud {
     int freq;
@@ -38,7 +33,7 @@ void * CALCFREQ()
             total+=1;
         }
         else if (lettre ==' ')
-        {
+         {
             alpha[26]+=1;
             total+=1;
         }
@@ -61,6 +56,7 @@ void * CALCFREQ()
     }
     fclose(fic);
 }
+
 
 struct Noeud createHeap (int freq, char caractere){
     struct Noeud temp;
@@ -167,21 +163,22 @@ void createTree(){
 
 bool estFeuille(struct Noeud *arbre)
 {
-    if(arbre=NULL){
-        estFeuille = false;
+    if(arbre!=NULL){
+        return false;
     }
-    else{
-        estFeuille = arbre->right=NULL && arbre->left=NULL;
+    else(arbre->right==NULL && arbre->left==NULL){
+        return true;
     }
 }
 
-struct Noeud Parcours(struct Noeud *arbre,string str)
+void Parcours(struct Noeud *arbre,char str, )
 {
-    if(arbre = NULL)
+    FILE * dest;
+    if(arbre->right==NULL && arbre->right==NULL)
     {
-        return;
+        memccpy(dest,*fic,(arbre->caractere && arbre->freq),sizeof((arbre->caractere && arbre->freq)));
     }
-    if(arbre->right!=NULL)
+    else if(arbre->right!=NULL)
     {
         arbre=arbre->right;
         Parcours(arbre->right,str+"1");
@@ -193,39 +190,22 @@ struct Noeud Parcours(struct Noeud *arbre,string str)
             Parcours(arbre->left,str+"0");
 
         }
-    }
-void CodeHuffman(int siez)
+}
+
+void Compression ()
 {
-    struct Noeud;
-    priority_queue<Noeud> queue;
-    int tabLettre[256];
-    int i;
-    for(i=0;i<256;i++)
+    char BUFFER[TAILLE_BUFFER];
+    FILE * src = fopen("Compression.txt","r");
+    if(src==NULL)
     {
-        tabLettre[i]=0;
-    }
-    for (i=0;i<256;i++)
-    {
-        if(tabLettre[i]!=0)
-        {
-            queue.push(Noeud(i, tabLettre[i]));
-        }
+        printf("Erreur, le fichier est vide.");
+        exit(1);
     }
 
-while(queue.size()!=1)
-{
-
-    Noeud *right = queue.top();
-    queue.top();
-
-    Noeud *left = queue.top();
-    queue.top();
-
-    queue.push(Noeud(right, left));
+    fwrite(&BUFFER,sizeof(BUFFER),1,destination)
 
 }
-queue.top.Parcoours();
-}
+
 void display() {
 
     int choix;
